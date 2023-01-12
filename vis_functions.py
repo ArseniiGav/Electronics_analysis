@@ -40,7 +40,8 @@ def plot_baselines_diffs(wfs_array, baseline_array,
                          evt_range, nrows=4, ncols=6,
                          Nbins=100, vertical_spacing=0.1,
                          horizontal_spacing=0.1,
-                         height=1000, width=1200): 
+                         height=1000, width=1200, 
+                         left_b=90, right_b=220):
     
     fig = make_subplots(rows=nrows, cols=ncols,
                         vertical_spacing=vertical_spacing,
@@ -48,7 +49,7 @@ def plot_baselines_diffs(wfs_array, baseline_array,
 
     for i in range(nrows*ncols):
         charges, baselines_wf, baselines_gcu = charge_comp(
-            wfs_array, baseline_array, i, 150, 250, evt_range)
+            wfs_array, baseline_array, i, left_b, right_b, evt_range)
     
         counts, bins = np.histogram(baselines_wf-baselines_gcu, bins=Nbins)
         bins = 0.5 * (bins[:-1] + bins[1:])
@@ -96,15 +97,16 @@ def plot_charges_hist(wfs_array, baseline_array, evt_range,
                       nrows=4, ncols=6, Nbins=100,
                       vertical_spacing=0.1,
                       horizontal_spacing=0.1,
-                      height=1000, width=1200): 
-    
+                      height=1000, width=1200, 
+                      left_b=90, right_b=220):
+
     fig = make_subplots(rows=nrows, cols=ncols,
                         vertical_spacing=vertical_spacing,
                         horizontal_spacing=horizontal_spacing)
     
     for i in range(nrows*ncols):
         charges, baselines_wf, baselines_gcu = charge_comp(
-            wfs_array, baseline_array, i, 150, 250, evt_range)
+            wfs_array, baseline_array, i, left_b, right_b, evt_range)
         
         counts, bins = np.histogram(charges, bins=Nbins)
         bins = 0.5 * (bins[:-1] + bins[1:])
@@ -151,7 +153,8 @@ def plot_charges_scatter(wfs_array, charge_array,
                          nrows=4, ncols=6,
                          vertical_spacing=0.1,
                          horizontal_spacing=0.1,
-                         height=1000, width=1200): 
+                         height=1000, width=1200, 
+                         left_b=90, right_b=220): 
     
     fig = make_subplots(rows=nrows, cols=ncols,
                         vertical_spacing=vertical_spacing,
@@ -159,7 +162,7 @@ def plot_charges_scatter(wfs_array, charge_array,
     
     for i in range(nrows*ncols):
         charges, baselines_wf, baselines_gcu = charge_comp(
-            wfs_array, baseline_array, i, 150, 250, evt_range)
+            wfs_array, baseline_array, i, left_b, right_b, evt_range)
 
         fig.add_trace(
             go.Scattergl(
@@ -274,7 +277,7 @@ def plot_wf_diff_channels_same_evt(
         axis_params['yaxis{}'.format(i)] = yaxis
 
     for i in range(nrows*ncols):
-        fig.update_yaxes(range=range_y, row=int(i/nrows)+1, col=i%ncols+1)
+        fig.update_yaxes(range=range_y, row=int(i/ncols)+1, col=i%ncols+1)
 
     fig.update_layout(
         **axis_params,
@@ -294,9 +297,9 @@ def plot_wf_diff_channels_same_evt(
 
 def plot_wf_same_channel_diff_evts(
     wfs_array, ChannelNumber, range_y=[11200, 11800],
-    nrows=10, ncols=6, height=1600, width=1400):
+    nrows=10, ncols=6, height=1600, width=1400, left_shift=1000):
 
-    evtIds = np.random.randint(2000, wfs_array.shape[0], size=nrows*ncols)
+    evtIds = np.random.randint(left_shift, wfs_array.shape[0], size=nrows*ncols)
     fig = make_subplots(rows=nrows, cols=ncols)
 
     for i in range(nrows*ncols):
@@ -314,7 +317,7 @@ def plot_wf_same_channel_diff_evts(
         axis_params['yaxis{}'.format(i)] = yaxis
 
     for i in range(nrows*ncols):
-        fig.update_yaxes(range=[11200, 11800], row=int(i/ncols)+1, col=i%ncols+1)
+        fig.update_yaxes(range=range_y, row=int(i/ncols)+1, col=i%ncols+1)
 
     fig.update_layout(
         **axis_params,
@@ -333,8 +336,8 @@ def plot_wf_same_channel_diff_evts(
     
 
 def rates_fit_plots(
-    runs_list, distrs, fit_params, rates, expected_rates,
-    colors=['royalblue', 'darkred'], log_scale=False
+    runs_list, distrs, fit_params, rates, Nbins=100, line_width=0.0,
+    colors=['royalblue', 'darkred'], log_scale=False, height=500, width=950, **kwargs
 ):
     
     fig = go.Figure()
@@ -342,13 +345,18 @@ def rates_fit_plots(
     for i in range(len(runs_list)):
         x = np.linspace(0, distrs[i].max()*8e-9, 10000)
         y = expon.pdf(x, *fit_params[i])
+        
+        try:
+            name = runs_list[i] + f". Fit rate τ: {np.round(rates[i], 2)}" + \
+                                  f". IPbus appr. rate τ: {kwargs['expected_rates'][i]}"
+        except:
+            name = runs_list[i] + f". Fit rate τ: {np.round(rates[i], 2)}"
                 
         fig.add_trace(
             go.Scatter(
                 x=x,
                 y=y,
-                name=runs_list[i] + f". Fit rate λ: {np.round(rates[i], 2)}" + \
-                                    f". IPbus appr. rate λ: {expected_rates[i]}",
+                name=name,
                 mode='lines',
                 line=dict(
                     color=colors[0],
@@ -358,22 +366,19 @@ def rates_fit_plots(
         )
 
     for i in range(len(runs_list)):
-        counts, bins = np.histogram(distrs[i]*8e-9, density=True, bins=100)
+        counts, bins = np.histogram(distrs[i]*8e-9, density=True, bins=Nbins)
         bins = 0.5 * (bins[:-1] + bins[1:]) 
         
-        # gof = mean_absolute_percentage_error(counts, expon.pdf(bins, *fit_params[i]))
-
         fig.add_trace(
             go.Bar(
                 x=bins,
                 y=counts,
                 showlegend=False,
-                # name=f"MAPE: {np.round(gof, 2)}",
                 marker=dict(
                     color=colors[1],
                     line=dict(
                         color='black',
-                        width=1.5,
+                        width=line_width,
                     )
                 ),
                 visible=(i==0)
@@ -385,7 +390,7 @@ def rates_fit_plots(
         buttons.append(
             dict(
                  args=['visible', [False]*N + [True] + [False]*(len(runs_list)-1-N)],
-                     label=f'Run {N+1}',
+                     label=f'Run {N}',
                  method='restyle'
             )
         )
@@ -404,8 +409,9 @@ def rates_fit_plots(
         showlegend=True,
         xaxis = xaxis,
         yaxis = yaxis,
-        height=500,
-        width=950,
+        bargap=0.0,
+        height=height,
+        width=width,
         updatemenus=list([
             dict(
                 x=x_button,

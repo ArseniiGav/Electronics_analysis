@@ -336,7 +336,7 @@ def plot_wf_same_channel_diff_evts(
     
 
 def rates_fit_plots(
-    runs_list, distrs, fit_params, rates, Nbins=100, line_width=0.0,
+    run_numbers, runs_list, distrs, fit_params, rates, Nbins=100, line_width=0.0,
     colors=['royalblue', 'darkred'], log_scale=False, height=500, width=950, **kwargs
 ):
     
@@ -390,7 +390,7 @@ def rates_fit_plots(
         buttons.append(
             dict(
                  args=['visible', [False]*N + [True] + [False]*(len(runs_list)-1-N)],
-                     label=f'Run {N}',
+                     label=f'Run {run_numbers[N]}',
                  method='restyle'
             )
         )
@@ -626,6 +626,67 @@ def plot_charges_by_channels_src_and_bkg(charges, timestamps, source_names, Nbin
         **axis_params,
         barmode='overlay',
         bargap=0.0,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.05,
+            xanchor="right",
+            x=1
+        )
+    )
+
+    fig.show()
+    
+
+def plot_timestamps(timestamps, scale_type="linear", nrows=4, ncols=6,
+                    vertical_spacing=0.1, horizontal_spacing=0.1,
+                    height=1000, width=1200, left_shift=1000,
+                    outlier_value=1e16, skip_outliers=False, evt_step=False): 
+    
+    fig = make_subplots(rows=nrows, cols=ncols,
+                        vertical_spacing=vertical_spacing,
+                        horizontal_spacing=horizontal_spacing)
+    
+    if evt_step:
+        timestamps = timestamps[::evt_step, :]
+        left_shift /= evt_step
+        left_shift = int(left_shift)
+        x_title = f"Evt. number / {evt_step}"
+    else:
+        x_title = "Evt. number"
+        
+    for i in range(nrows*ncols):
+        
+        shifted_timestamp = timestamps[left_shift:, i]
+        x = np.arange(len(timestamps[:, i]))
+        shifted_x = x[left_shift:]
+        
+        if skip_outliers:
+            outliers_mask = (shifted_timestamp < outlier_value)
+            shifted_x = shifted_x[outliers_mask]
+            shifted_timestamp = shifted_timestamp[outliers_mask]
+
+        fig.add_trace(
+            go.Scattergl(
+                x=shifted_x,
+                y=shifted_timestamp,
+                name=f"Channel: {i}",
+                mode='lines',
+            ), row=int(i/ncols)+1, col=i%ncols+1
+        )
+        
+        fig.update_xaxes(title=x_title, row=int(i/ncols)+1, col=i%ncols+1)
+        fig.update_yaxes(title="Timestamp", type=scale_type, row=int(i/ncols)+1, col=i%ncols+1)
+
+    axis_params = {}
+    for i in range(1, nrows*ncols+1):
+        axis_params['xaxis{}'.format(i)] = xaxis
+        axis_params['yaxis{}'.format(i)] = yaxis
+
+    fig.update_layout(
+        height=height,
+        width=width,
+        **axis_params,
         legend=dict(
             orientation="h",
             yanchor="bottom",

@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from scipy.stats import expon
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
@@ -648,7 +649,13 @@ def plot_timestamps(timestamps, scale_type="linear", nrows=4, ncols=6,
                         horizontal_spacing=horizontal_spacing)
     
     if evt_step:
-        timestamps = timestamps[::evt_step, :]
+        if len(timestamps.shape) == 1:
+            timestamps = copy.deepcopy(timestamps)
+            for i in range(len(timestamps)):
+                timestamps[i] = timestamps[i][::evt_step]
+        else:
+            timestamps = timestamps[::evt_step, :]
+            
         left_shift /= evt_step
         left_shift = int(left_shift)
         x_title = f"Evt. number / {evt_step}"
@@ -656,15 +663,18 @@ def plot_timestamps(timestamps, scale_type="linear", nrows=4, ncols=6,
         x_title = "Evt. number"
         
     for i in range(nrows*ncols):
-        
-        shifted_timestamp = timestamps[left_shift:, i]
-        x = np.arange(len(timestamps[:, i]))
+        if len(timestamps.shape) == 1:
+            shifted_timestamp = timestamps[i][left_shift:]
+            x = np.arange(len(timestamps[i]))
+        else:
+            shifted_timestamp = timestamps[left_shift:, i]
+            x = np.arange(len(timestamps[:, i]))
         shifted_x = x[left_shift:]
         
         if skip_outliers:
             outliers_mask = (shifted_timestamp < outlier_value)
-            shifted_x = shifted_x[outliers_mask]
             shifted_timestamp = shifted_timestamp[outliers_mask]
+            shifted_x = shifted_x[outliers_mask]
 
         fig.add_trace(
             go.Scattergl(

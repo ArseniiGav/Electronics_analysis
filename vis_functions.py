@@ -428,7 +428,10 @@ def plot_wf_diff_channels_same_evt(
     default_button = []
     default_yaxis_range = {"yaxis.range": [minis[0], maxis[0]]}
     for i in range(2, nrows*ncols+1):
-        default_yaxis_range[f"yaxis{i}.range"] = [minis[i-1], maxis[i-1]]
+        try:
+            default_yaxis_range[f"yaxis{i}.range"] = [minis[i-1], maxis[i-1]]
+        except:
+            pass
     default_button.append(
         dict(
             args=[default_yaxis_range],

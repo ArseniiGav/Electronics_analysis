@@ -27,6 +27,7 @@ run = neptune.init_run(
         "all"
     ],
     name="LNL",
+#    with_id="LNL-7"
 )
 
 del PARAMS['api_token']
@@ -72,7 +73,7 @@ for i in range(shp[1]):
 rates_array = []
 fit_params_array = []
 distrs_array = []
-for channel_number in tqdm(range(48)):
+for channel_number in tqdm(range(shp[1])):
     rate_estim_outputs = np.array(
         [rate_estim(path, run_num, output_file, channel_number, Nmeds=10, left_shift=10000) for run_num in run_numbers],
         dtype=object
@@ -84,12 +85,12 @@ for channel_number in tqdm(range(48)):
 
 active_chs = join_by_run(paths, ['active_ch'])
 plot_distrs_one_param(active_chs, 'active_ch', source_names,
-                      save_plot=False, Nbins=48, xaxis_title="Active channels",
+                      save_plot=False, Nbins=np.linspace(0, shp[1], shp[1]+1), xaxis_title="Active channels",
                       neptune_run=True, run=run, run_plot_name="Active channels")
 
 multiplicity = join_by_run(paths, ['multiplicity'])
 plot_distrs_one_param(multiplicity, 'multiplicity', source_names,
-                      save_plot=False, Nbins=45, xaxis_title="Multiplicity", 
+                      save_plot=False, Nbins=np.linspace(0, shp[1], shp[1]+1), xaxis_title="Multiplicity", 
                       neptune_run=True, run=run, run_plot_name="Multiplicity")
 
 plot_timestamps(timestamps, width=1600, height=1800, left_shift=20000,
@@ -116,7 +117,7 @@ for evt_num in [2000, 5000, 10000]:
 for channel_num in [0, 14, 28, 42]:
     plot_wf_same_channel_diff_evts(wfs_array, ChannelNumber=channel_num, nrows=5, ncols=5,
                                    height=1200, width=1400, left_shift=100, 
-                                   range_y_max=11800, NsiЦgmas=int(PARAMS['Nsigmas']),
+                                   range_y_max=11800, Nsigmas=int(PARAMS['Nsigmas']),
                                    baseline_samples=int(PARAMS['baseline_samples']),
                                    neptune_run=True, run=run,
                                    run_plot_name=f"Same channel, diff. evts. Channel {channel_num}")

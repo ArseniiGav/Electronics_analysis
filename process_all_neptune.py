@@ -44,6 +44,7 @@ baseline_samples = PARAMS['baseline_samples']
 evt_step = PARAMS['evt_step']
 left_b = PARAMS['left_b']
 right_b = PARAMS['right_b']
+left_shift = int(PARAMS['left_shift'])
 source_names = [source_name]
 runs_list = ["Run "+run_number+". "+source_name]
 
@@ -75,7 +76,7 @@ fit_params_array = []
 distrs_array = []
 for channel_number in tqdm(range(shp[1])):
     rate_estim_outputs = np.array(
-        [rate_estim(path, run_num, output_file, channel_number, Nmeds=10, left_shift=10000) for run_num in run_numbers],
+        [rate_estim(path, run_num, output_file, channel_number, Nmeds=10, left_shift=left_shift) for run_num in run_numbers],
         dtype=object
     )
     
@@ -93,7 +94,7 @@ plot_distrs_one_param(multiplicity, 'multiplicity', source_names,
                       save_plot=False, Nbins=np.linspace(0, shp[1], shp[1]+1), xaxis_title="Multiplicity", 
                       neptune_run=True, run=run, run_plot_name="Multiplicity")
 
-plot_timestamps(timestamps, width=1600, height=1800, left_shift=20000,
+plot_timestamps(timestamps, width=1600, height=1800, left_shift=left_shift,
             vertical_spacing=0.05, horizontal_spacing=0.05, evt_step=1000,
             neptune_run=True, run=run, run_plot_name="Timestamps")
 
@@ -116,7 +117,7 @@ for evt_num in [2000, 5000, 10000]:
                                    run_plot_name=f"Diff. channels, same evt. EvtNumber: {evt_num}")
 for channel_num in [0, 14, 28, 42]:
     plot_wf_same_channel_diff_evts(wfs_array, ChannelNumber=channel_num, nrows=5, ncols=5,
-                                   height=1200, width=1400, left_shift=100, 
+                                   height=1200, width=1400, left_shift=left_shift, 
                                    range_y_max=11800, Nsigmas=int(PARAMS['Nsigmas']),
                                    baseline_samples=int(PARAMS['baseline_samples']),
                                    neptune_run=True, run=run,
@@ -149,7 +150,7 @@ plot_distrs_one_param(total_charges, 'total_charge', source_names, "Total charge
 
 for i in run_numbers:
     print(f"-_____________________run number {i}_____________________")
-    timestamp_list = timestamp_calc(path, run_number=i, dir_name="tier1", left_shift=1000)
+    timestamp_list = timestamp_calc(path, run_number=i, dir_name="tier1", left_shift=left_shift)
     print(timestamp_list)
     print(f"**************Number of channels: {len(timestamp_list)}")
     print("\n \n")

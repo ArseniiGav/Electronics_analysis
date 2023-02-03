@@ -45,6 +45,8 @@ evt_step = int(PARAMS['evt_step'])
 left_b = int(PARAMS['left_b'])
 right_b = int(PARAMS['right_b'])
 left_shift = int(PARAMS['left_shift'])
+graph_height = int(PARAMS['graph_height'])
+graph_width = int(PARAMS['graph_width'])
 source_names = [source_name]
 runs_list = ["Run "+run_number+". "+source_name]
 
@@ -94,47 +96,47 @@ plot_distrs_one_param(multiplicity, 'multiplicity', source_names,
                       save_plot=False, Nbins=np.linspace(0, shp[1], shp[1]+1), xaxis_title="Multiplicity", 
                       neptune_run=True, run=run, run_plot_name="Multiplicity")
 
-plot_timestamps(timestamps, width=1600, height=1800, left_shift=left_shift,
+plot_timestamps(timestamps, width=graph_width, height=graph_height, left_shift=left_shift,
             vertical_spacing=0.05, horizontal_spacing=0.05, evt_step=1000,
             neptune_run=True, run=run, run_plot_name="Timestamps")
 
 rates_fit_plots(run_numbers, runs_list, distrs_array, fit_params_array, rates_array,
-                Nbins=50, line_width=0.5,  height=1600, width=1600, neptune_run=True, run=run,
+                Nbins=50, line_width=0.5,  height=graph_height, width=graph_width, neptune_run=True, run=run,
                                    run_plot_name=f"Rate by channel for {PARAMS['run_number']} run")
 
 
 wfs_2d_plot_by_channels(dfs, 't', 'wfs', plot_width=120,
-                        plot_height=120, height=1600, width=1400,
+                        plot_height=120, height=graph_height, width=graph_width,
                         neptune_run=True, run=run,
                         run_plot_name="wfs 2d hist by channel")
 
 for evt_num in [2000, 5000, 10000]:
-    plot_wf_diff_channels_same_evt(wfs_array, EvtNumber=evt_num, height=1600,
-                                   width=1600, range_y_max=11800, 
+    plot_wf_diff_channels_same_evt(wfs_array, EvtNumber=evt_num, height=graph_height,
+                                   width=graph_width, range_y_max=11800, 
                                    Nsigmas=Nsigmas, baseline_samples=baseline_samples,
                                    neptune_run=True, run=run,
                                    run_plot_name=f"Diff. channels, same evt. EvtNumber: {evt_num}")
 for channel_num in [0, 14, 28, 42]:
-    plot_wf_same_channel_diff_evts(wfs_array, ChannelNumber=channel_num, nrows=5, ncols=5,
-                                   height=1200, width=1400, left_shift=left_shift, 
+    plot_wf_same_channel_diff_evts(wfs_array, ChannelNumber=channel_num, nrows=7, ncols=5,
+                                   height=graph_height, width=graph_width, left_shift=left_shift, 
                                    range_y_max=11800, Nsigmas=Nsigmas,
                                    baseline_samples=baseline_samples,
                                    neptune_run=True, run=run,
                                    run_plot_name=f"Same channel, diff. evts. Channel {channel_num}")
 
 plot_baselines_diffs(wfs_array, baseline_array, horizontal_spacing=0.05,
-                     vertical_spacing=0.05, height=1600, width=1400, left_b=left_b,
+                     vertical_spacing=0.05, height=graph_height, width=graph_width, left_b=left_b,
                      right_b=right_b, baseline_samples=baseline_samples,
                      neptune_run=True, run=run, run_plot_name="Baselines' differences distributions")
 
 plot_charges_hist(wfs_array, baseline_array, horizontal_spacing=0.05,
-                  vertical_spacing=0.05, height=1600, width=1400,
+                  vertical_spacing=0.05, height=graph_height, width=graph_width,
                   left_b=left_b, right_b=right_b, baseline_samples=baseline_samples, neptune_run=True, run=run,
                   run_plot_name="Charge distributions (where the charge is calculated manually)")
 
 plot_charges_scatter(wfs_array, charge_array, baseline_array,
-                     horizontal_spacing=0.08, vertical_spacing=0.05, height=1600,
-                     width=1400, left_b=left_b, right_b=right_b,
+                     horizontal_spacing=0.08, vertical_spacing=0.05, height=graph_height,
+                     width=graph_width, left_b=left_b, right_b=right_b,
                      baseline_samples=baseline_samples,
                      evt_step=evt_step, neptune_run=True, run=run,
                      run_plot_name="Manually calculated charge (x axis) vs. GCU calculated charge (y axis)")

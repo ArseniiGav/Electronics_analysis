@@ -39,11 +39,11 @@ output_file_wf = PARAMS['output_file_wf']
 run_number = PARAMS['run_number']
 run_numbers = [run_number]
 source_name = PARAMS['source_name']
-Nsigmas = PARAMS['Nsigmas']
-baseline_samples = PARAMS['baseline_samples']
-evt_step = PARAMS['evt_step']
-left_b = PARAMS['left_b']
-right_b = PARAMS['right_b']
+Nsigmas = int(PARAMS['Nsigmas'])
+baseline_samples = int(PARAMS['baseline_samples'])
+evt_step = int(PARAMS['evt_step'])
+left_b = int(PARAMS['left_b'])
+right_b = int(PARAMS['right_b'])
 left_shift = int(PARAMS['left_shift'])
 source_names = [source_name]
 runs_list = ["Run "+run_number+". "+source_name]
@@ -111,34 +111,32 @@ wfs_2d_plot_by_channels(dfs, 't', 'wfs', plot_width=120,
 for evt_num in [2000, 5000, 10000]:
     plot_wf_diff_channels_same_evt(wfs_array, EvtNumber=evt_num, height=1600,
                                    width=1600, range_y_max=11800, 
-                                   Nsigmas=int(PARAMS['Nsigmas']),
-                                   baseline_samples=int(PARAMS['baseline_samples']),
+                                   Nsigmas=Nsigmas, baseline_samples=baseline_samples,
                                    neptune_run=True, run=run,
                                    run_plot_name=f"Diff. channels, same evt. EvtNumber: {evt_num}")
 for channel_num in [0, 14, 28, 42]:
     plot_wf_same_channel_diff_evts(wfs_array, ChannelNumber=channel_num, nrows=5, ncols=5,
                                    height=1200, width=1400, left_shift=left_shift, 
-                                   range_y_max=11800, Nsigmas=int(PARAMS['Nsigmas']),
-                                   baseline_samples=int(PARAMS['baseline_samples']),
+                                   range_y_max=11800, Nsigmas=Nsigmas,
+                                   baseline_samples=baseline_samples,
                                    neptune_run=True, run=run,
                                    run_plot_name=f"Same channel, diff. evts. Channel {channel_num}")
 
 plot_baselines_diffs(wfs_array, baseline_array, horizontal_spacing=0.05,
-                     vertical_spacing=0.05, height=1600, width=1400, left_b=int(PARAMS['left_b']),
-                     right_b=int(PARAMS['right_b']), baseline_samples=int(PARAMS['baseline_samples']),
+                     vertical_spacing=0.05, height=1600, width=1400, left_b=left_b,
+                     right_b=right_b, baseline_samples=baseline_samples,
                      neptune_run=True, run=run, run_plot_name="Baselines' differences distributions")
 
 plot_charges_hist(wfs_array, baseline_array, horizontal_spacing=0.05,
                   vertical_spacing=0.05, height=1600, width=1400,
-                  left_b=int(PARAMS['left_b']), right_b=int(PARAMS['right_b']),
-                  baseline_samples=int(PARAMS['baseline_samples']), neptune_run=True, run=run,
+                  left_b=left_b, right_b=right_b, baseline_samples=baseline_samples, neptune_run=True, run=run,
                   run_plot_name="Charge distributions (where the charge is calculated manually)")
 
 plot_charges_scatter(wfs_array, charge_array, baseline_array,
                      horizontal_spacing=0.08, vertical_spacing=0.05, height=1600,
-                     width=1400, left_b=int(PARAMS['left_b']), right_b=int(PARAMS['right_b']),
-                     baseline_samples=int(PARAMS['baseline_samples']),
-                     evt_step=int(PARAMS['evt_step']), neptune_run=True, run=run,
+                     width=1400, left_b=left_b, right_b=right_b,
+                     baseline_samples=baseline_samples,
+                     evt_step=evt_step, neptune_run=True, run=run,
                      run_plot_name="Manually calculated charge (x axis) vs. GCU calculated charge (y axis)")
 
 paths = [f'{path}run{i}/tier1/{output_file}' for i in run_numbers]

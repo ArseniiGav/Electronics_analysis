@@ -5,7 +5,7 @@ import iminuit
 
 
 
-def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600)):
+def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600), normed=False):
     totalPEs = []
     source_counts = []
     source_bins = []
@@ -21,7 +21,7 @@ def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600)):
         totalPEs.append(totalPE)
         nHits_array.append(nHits)
 
-        counts, bins = np.histogram(totalPE, bins=Nbins)
+        counts, bins = np.histogram(totalPE, bins=Nbins, normed=normed)
         bins = 0.5 * (bins[:-1] + bins[1:])
         source_counts.append(counts)
         source_bins.append(bins)
@@ -66,9 +66,11 @@ def comp_multiplicity(nHits, naxis=2, Nbins=48):
 
     return source_counts, source_bins
 
-def comp_corrected_mult(mus, ideal, sources, nPEs_real=4):
+def comp_corrected_mult(sources, factor=20/257, ideal=False):
+    if ideal:
+        factor = 20/1213
     source_counts, source_bins, totalPEs, nHits_array = collect_data(sources, ideal=ideal)
-    nHits_corrected = nHits_array[0] / mus[0] * nPEs_real
+    nHits_corrected = nHits_array[0] * factor
     nHits_poisson = np.random.poisson(nHits_corrected)
     corrected_multiplicity = np.count_nonzero(nHits_poisson, axis=1)
     counts, bins = np.histogram(corrected_multiplicity, bins=np.linspace(

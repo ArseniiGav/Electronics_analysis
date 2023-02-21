@@ -2,6 +2,8 @@ import numpy as np
 import plotly.graph_objs as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
+import warnings
+warnings.filterwarnings("ignore")
 pio.templates.default = 'plotly_white'
 
 
@@ -54,17 +56,17 @@ def add_buttons(args1, args2, label1, label2, x_shift, method, y_shift=1.15):
     return buttons_dict
 
 
-def plot_charges_by_channels(nHits_array, colors, sources,
+def plot_charges_by_channels(nHits_array, colors, sources, title,
                              pmt_x, pmt_y, pmt_z, Nbins, nrows=8, ncols=6,
                              bkg_subtract=False,  line_width=0.0, 
-                             opacity=0.75, height=1800, 
-                             width=1600, **kwargs):
+                             opacity=0.75, height=1800,  xtitle=0.05, ytitle=1,
+                             width=1600, normed=False, **kwargs):
 
     fig = make_subplots(rows=nrows, cols=ncols)
 
     for i in range(nrows*ncols):
         for k in range(len(sources)):
-                counts, bins = np.histogram(nHits_array[k][:, i], bins=Nbins)
+                counts, bins = np.histogram(nHits_array[k][:, i], bins=Nbins, normed=normed)
                 bins = 0.5 * (bins[:-1] + bins[1:])
                 
                 if k==0:
@@ -108,7 +110,17 @@ def plot_charges_by_channels(nHits_array, colors, sources,
                         text=f"PMT: {i}, source: {sources[k]}. PMT's coors: [{str(pmt_x[i])[:4]}, {str(pmt_y[i])[:4]}, {str(pmt_z[i])[:4]}]",
                     ), row=int(i/ncols)+1, col=i%ncols+1
                 )
+                
+                if pmt_z[i] == -10.0:
+                    text="Bottom"
+                elif pmt_z[i] == 0.0:
+                    text="Middle"
+                else:
+                    text="Top"
+                
+                fig.add_annotation(text=text, xref=f"x{i+1}", yref=f"y{i+1}", x=50, y=0.2, showarrow=False)
 
+                
     visibles = [True, False] * nrows*ncols * len(counts)
     axis_params = {}
     yaxis_linear = {"yaxis.type": "linear"}
@@ -136,9 +148,13 @@ def plot_charges_by_channels(nHits_array, colors, sources,
             "Bar", "Step", 0.75, "update", 1.15
         )
     )
-
-    
+      
     fig.update_layout(
+        title=dict(
+            text=title,
+            x=xtitle,
+            y=ytitle,
+        ),
         height=height,
         width=width,
         **axis_params,

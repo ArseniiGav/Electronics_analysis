@@ -10,6 +10,7 @@ def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600), normed=F
     source_counts = []
     source_bins = []
     nHits_array = []
+    edepScint_MeV_array = []
     for source in sources:
         if ideal:
             file = uproot.open(f'data/lnl{source}I.root')
@@ -17,9 +18,12 @@ def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600), normed=F
             file = uproot.open(f'data/lnl{source}.root')
         totalPE = np.array(file['evt']['totalPE'].array())
         nHits = np.array(file['evt']['nHits'].array())
+        edepScint_MeV = np.array(file['evt']['edepScint_MeV'].array())
+
         print(f"{source} totalPE mean: {totalPE.mean()}")
         totalPEs.append(totalPE)
         nHits_array.append(nHits)
+        edepScint_MeV_array.append(edepScint_MeV)
 
         counts, bins = np.histogram(totalPE, bins=Nbins, normed=normed)
         bins = 0.5 * (bins[:-1] + bins[1:])
@@ -30,7 +34,7 @@ def collect_data(sources, ideal=False, Nbins=np.linspace(1, 2400, 600), normed=F
     pmt_y = np.array(file['pmt_pos']['pmtY_cm'].array())
     pmt_z = np.array(file['pmt_pos']['pmtZ_cm'].array())
         
-    return source_counts, source_bins, totalPEs, nHits_array
+    return source_counts, source_bins, totalPEs, nHits_array, edepScint_MeV_array
 
 
 def get_pmt_coors():

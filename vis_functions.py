@@ -360,6 +360,7 @@ def wfs_2d_plot_by_channels(data, xlabel, ylabel, neptune_run=False,
         run_plot_name = kwargs['run_plot_name']
         run[run_plot_name].upload(neptune.types.File.as_html(fig))
 
+        
 def plot_wf_diff_channels_same_evt(
     wfs_array, EvtNumber, range_y_max=11800, range_y_min_step=200, neptune_run=False,
     nrows=8, ncols=6, height=800, width=1400, Nsigmas=25, baseline_samples=60, **kwargs):
@@ -622,82 +623,54 @@ def plot_wf_same_channel_diff_evts(
 
 
 def rates_fit_plots(
-    run_numbers, runs_list, distrs_array, fit_params_array, rates_array, neptune_run=False,
-    Nbins=100, line_width=0.0, height=1600, width=1400, nrows=8, ncols=6,
+    run_numbers, runs_list, distrs, fit_params, rates, channel_number, neptune_run=False,
+    Nbins=100, line_width=0.0, height=500, width=950, nrows=8, ncols=6,
     vertical_spacing=0.05, horizontal_spacing=0.05, **kwargs
 ):
-    fig = make_subplots(rows=nrows, cols=ncols,
-                        vertical_spacing=vertical_spacing,
-                        horizontal_spacing=horizontal_spacing)
+    fig = go.Figure()
 
-    size = len(distrs_array)
     for i in range(len(runs_list)):
-        try:
-            for k in range(size):
-                if len(distrs_array[k][i]) == 0:
-                    x = [0]
-                    y = [0]
-                    bins = [0]
-                    counts = [0]
-                    name = f"Channel {k}. τ: {np.round(rates_array[k][i], 2)}"
-                else:
-                    x = np.linspace(0, distrs_array[k][i].max()*8e-9, 10000)
-                    y = expon.pdf(x, *fit_params_array[k][i])
-                    name = f"Channel {k}. τ: {np.round(rates_array[k][i], 2)}"
+        counts, bins = np.histogram(distrs[i]*8e-9, density=True, bins=Nbins)
+        bins = 0.5 * (bins[:-1] + bins[1:]) 
 
-                    counts, bins = np.histogram(distrs_array[k][i]*8e-9, density=True, bins=Nbins)
-                    bins = 0.5 * (bins[:-1] + bins[1:]) 
+        x = np.linspace(0, bins[-1], 10000)
+        y = expon.pdf(x, *fit_params[i])
+        name = f"Channel {channel_number}. τ: {np.round(rates[i], 2)}"
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=x,
-                        y=y,
-                        name=name,
-                        mode='lines',
-                        visible=(i==0)
-                    ), row=int(k/ncols)+1, col=k%ncols+1
-                )
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=y,
+                name=name,
+                mode='lines',
+                visible=(i==0)
+            )
+        )
 
-                fig.add_trace(
-                    go.Bar(
-                        x=bins,
-                        y=counts,
-                        showlegend=False,
-                        marker=dict(
-                            color='darkred',
-                            line=dict(
-                                color='black',
-                                width=line_width,
-                            )
-                        ),
-                        visible=(i==0)
-                    ), row=int(k/ncols)+1, col=k%ncols+1
-                )
+        fig.add_trace(
+            go.Bar(
+                x=bins,
+                y=counts,
+                showlegend=False,
+                marker=dict(
+                    color='darkred',
+                    line=dict(
+                        color='black',
+                        width=line_width,
+                    )
+                ),
+                visible=(i==0)
+            )
+        )
 
-                fig.update_xaxes(title="Timestamp diffs",
-                                 row=int(i/ncols)+1, col=i%ncols+1)
-
+        fig.update_xaxes(title="Timestamp diffs",)
                 
-        except Exception as e:
-            print(e)
-            pass
-
-    axis_params = {}
-    yaxis_linear = {"yaxis.type": "linear"}
-    yaxis_log = {"yaxis.type": "log"}
-    for i in range(1, size+1):
-        try:
-            axis_params[f'xaxis{i}'] = xaxis
-            axis_params[f'yaxis{i}'] = yaxis
-            if i > 1:
-                yaxis_linear[f"yaxis{i}.type"] = "linear"
-                yaxis_log[f"yaxis{i}.type"] = "log"
-        except:
-            pass
-        
     updatemenus = []
-    updatemenus.append(add_buttons(
-            yaxis_linear, yaxis_log, "Linear scale", "Log scale", 0.4, "relayout", y_shift=1.18
+    updatemenus.append(
+        add_buttons(
+            {"yaxis.type": "linear"},
+            {"yaxis.type": "log"},
+            "Linear scale", "Log scale", 0.25, "relayout"
         )
     )
     
@@ -705,7 +678,7 @@ def rates_fit_plots(
     for N in range(len(runs_list)): 
         buttons.append(
             dict(
-                 args=['visible', [False]*2*N*size + [True]*2*size + [False]*2*size*(len(runs_list)-1-N)],
+                 args=['visible', [False]*2*N + [True]*2 + [False]*2*(len(runs_list)-1-N)],
                      label=f'{runs_list[N].capitalize()}',
                  method='restyle'
             )
@@ -723,7 +696,8 @@ def rates_fit_plots(
         
     fig.update_layout(
         showlegend=True,
-        **axis_params,
+        xaxis=xaxis,
+        yaxis=yaxis,
         bargap=0.0,
         height=height,
         width=width,

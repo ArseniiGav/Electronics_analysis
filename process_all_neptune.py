@@ -27,7 +27,7 @@ run = neptune.init_run(
         "all"
     ],
     name="LNL",
-#    with_id="LNL-7"
+    # with_id="LNL-19"
 )
 
 del PARAMS['api_token']
@@ -44,6 +44,7 @@ baseline_samples = int(PARAMS['baseline_samples'])
 evt_step = int(PARAMS['evt_step'])
 left_b = int(PARAMS['left_b'])
 right_b = int(PARAMS['right_b'])
+rates_bins = int(PARAMS['rates_bins'])
 left_shift = int(PARAMS['left_shift'])
 graph_height = int(PARAMS['graph_height'])
 graph_width = int(PARAMS['graph_width'])
@@ -76,15 +77,16 @@ for i in range(shp[1]):
 rates_array = []
 fit_params_array = []
 distrs_array = []
-for channel_number in tqdm(range(shp[1])):
-    rate_estim_outputs = np.array(
-        [rate_estim(path, run_num, output_file, channel_number, Nmeds=10, left_shift=left_shift) for run_num in run_numbers],
-        dtype=object
-    )
-    
-    rates_array.append(rate_estim_outputs[:, 0])
-    fit_params_array.append(rate_estim_outputs[:, 1])
-    distrs_array.append(rate_estim_outputs[:, 2])
+
+channel_number = np.random.randint(45)
+rate_estim_outputs = np.array(
+    [rate_estim(path, run_number, output_file, channel_number, Nmeds=10, left_shift=left_shift) for run_number in run_numbers],
+    dtype=object
+)
+
+rates = rate_estim_outputs[:, 0]
+fit_params = rate_estim_outputs[:, 1]
+distrs = rate_estim_outputs[:, 2]
 
 active_chs = join_by_run(paths, ['active_ch'])
 plot_distrs_one_param(active_chs, 'active_ch', source_names,
@@ -100,10 +102,9 @@ plot_timestamps(timestamps, width=graph_width, height=graph_height, left_shift=l
             vertical_spacing=0.05, horizontal_spacing=0.05, evt_step=1000,
             neptune_run=True, run=run, run_plot_name="Timestamps")
 
-rates_fit_plots(run_numbers, runs_list, distrs_array, fit_params_array, rates_array,
-                Nbins=50, line_width=0.5,  height=graph_height, width=graph_width, neptune_run=True, run=run,
-                                   run_plot_name=f"Rate by channel for {PARAMS['run_number']} run")
-
+rates_fit_plots(run_numbers, runs_list, distrs, fit_params, rates, channel_number,
+                Nbins=rates_bins, line_width=0.1, neptune_run=True, run=run,
+                run_plot_name=f"Rate by channel for {PARAMS['run_number']} run")
 
 wfs_2d_plot_by_channels(dfs, 't', 'wfs', plot_width=120,
                         plot_height=120, height=graph_height, width=graph_width,

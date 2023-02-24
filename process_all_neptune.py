@@ -104,7 +104,7 @@ plot_timestamps(timestamps, width=graph_width, height=graph_height, left_shift=l
 
 rates_fit_plots(run_numbers, runs_list, distrs, fit_params, rates, channel_number,
                 Nbins=rates_bins, line_width=0.1, neptune_run=True, run=run,
-                run_plot_name=f"Rate by channel for {PARAMS['run_number']} run")
+                run_plot_name=f"Rate for {PARAMS['run_number']} run")
 
 wfs_2d_plot_by_channels(dfs, 't', 'wfs', plot_width=120,
                         plot_height=120, height=graph_height, width=graph_width,

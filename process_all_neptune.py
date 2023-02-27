@@ -102,7 +102,7 @@ plot_timestamps(timestamps, width=graph_width, height=graph_height, left_shift=l
             vertical_spacing=0.05, horizontal_spacing=0.05, evt_step=1000,
             neptune_run=True, run=run, run_plot_name="Timestamps")
 
-rates_fit_plots(run_numbers, runs_list, distrs, fit_params, rates, channel_number,
+rates_fit_plots(runs_list, distrs, fit_params, rates, channel_number,
                 Nbins=rates_bins, line_width=0.1, neptune_run=True, run=run,
                 run_plot_name=f"Rate for {PARAMS['run_number']} run")
 

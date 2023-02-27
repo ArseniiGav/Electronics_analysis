@@ -623,7 +623,7 @@ def plot_wf_same_channel_diff_evts(
 
 
 def rates_fit_plots(
-    run_numbers, runs_list, distrs, fit_params, rates, channel_number, neptune_run=False,
+    runs_list, distrs, fit_params, rates, channel_number, neptune_run=False,
     Nbins=100, line_width=0.0, height=500, width=950, nrows=8, ncols=6,
     vertical_spacing=0.05, horizontal_spacing=0.05, **kwargs
 ):
